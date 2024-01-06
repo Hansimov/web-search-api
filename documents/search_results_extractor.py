@@ -27,17 +27,21 @@ class SearchResultsExtractor:
             print(
                 f"{title}\n" f"  - {site}\n" f"  - {link}\n" f"  - {abstract}\n" f"\n"
             )
+        print(len(search_result_elements))
 
     def extract_related_questions(self):
-        related_questions = self.soup.find_all("div", class_="related-question-pair")
-        for question in related_questions:
+        related_question_elements = self.soup.find_all(
+            "div", class_="related-question-pair"
+        )
+        for question_element in related_question_elements:
+            question = question_element.find("span").text.strip()
             print(question)
-            # print(question.find("a")["href"])
-            # print(question.find("a").text)
+        print(len(related_question_elements))
 
     def extract(self, html_path):
         self.load_html(html_path)
         self.extract_search_results()
+        self.extract_related_questions()
 
 
 if __name__ == "__main__":

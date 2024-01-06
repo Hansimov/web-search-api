@@ -1,16 +1,7 @@
 import requests
 from pathlib import Path
 from utils.enver import enver
-
-
-class RequestHeaderConstructor:
-    def __init__(self):
-        self.construct()
-
-    def construct(self):
-        self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62",
-        }
+from utils.logger import logger
 
 
 class GoogleSearcher:
@@ -21,35 +12,36 @@ class GoogleSearcher:
         self.enver.set_envs(proxies=True)
         self.output_root = Path(__file__).parents[1] / "files"
 
-    def send_request(self, query, result_num=10):
-        res = requests.get(
+    def send_request(self, result_num=10):
+        logger.note(f"Searching: [{self.query}]")
+        self.request_response = requests.get(
             url=self.url,
-            headers=RequestHeaderConstructor().headers,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62",
+            },
             params={
                 "q": self.query,
                 "num": result_num,
-                # "hl": "en",
-                # "start": 0,
             },
             proxies=self.enver.requests_proxies,
         )
-        return res
 
-    def save_response(self, res, query):
-        output_filename = query.replace(" ", "_") + ".html"
+    def save_response(self):
+        output_filename = self.query.replace(" ", "_") + ".html"
         if not self.output_root.exists():
             self.output_root.mkdir(parents=True, exist_ok=True)
         output_path = self.output_root / output_filename
+        logger.note(f"Saving to: [{output_path}]")
         with open(output_path, "wb") as wf:
-            wf.write(res.content)
+            wf.write(self.request_response.content)
 
     def search(self, query):
         self.query = query
-        res = self.send_request(query)
-        self.save_response(res, query)
+        self.send_request()
+        self.save_response()
 
 
 if __name__ == "__main__":
     searcher = GoogleSearcher()
-    # searcher.search("python tutorials")
-    searcher.search("python教程")
+    # searcher.search("python教程")
+    searcher.search("python tutorials")

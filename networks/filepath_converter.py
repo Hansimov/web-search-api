@@ -71,7 +71,7 @@ class FilepathConverter:
         self.filename = filename
         self.filepath = filepath
 
-        return {"filename": self.filename, "filepath": self.filepath}
+        return self.filepath
 
 
 class UrlToFilepathConverter(FilepathConverter):
@@ -93,12 +93,12 @@ class QueryToFilepathConverter(FilepathConverter):
 if __name__ == "__main__":
     query = "python 教程"
     query_converter = QueryToFilepathConverter()
-    print(query_converter.convert(query)["filename"])
+    print(query_converter.convert(query))
 
     # url = "https://trafilatura.readthedocs.io/en/latest/quickstart.html"
-    url = "https://www.bing.com/search?q=Bing+AI&showconv=1&setlang=en&cc=us"
-    # url = (
-    #     "https://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename"
-    # )
+    url = (
+        "https://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename"
+    )
+
     url_converter = UrlToFilepathConverter()
-    print(url_converter.convert(url, parent=query)["filepath"])
+    print(url_converter.convert(url, parent=query))

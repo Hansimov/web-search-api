@@ -2,6 +2,7 @@ import requests
 from pathlib import Path
 from utils.enver import enver
 from utils.logger import logger
+from networks.filepath_converter import QueryToFilepathConverter
 
 
 class GoogleSearcher:
@@ -10,7 +11,7 @@ class GoogleSearcher:
         self.url = "https://www.google.com/search"
         self.enver = enver
         self.enver.set_envs(proxies=True)
-        self.output_root = Path(__file__).parents[1] / "files"
+        self.filepath_converter = QueryToFilepathConverter()
 
     def send_request(self, result_num=10):
         logger.note(f"Searching: [{self.query}]")
@@ -27,12 +28,11 @@ class GoogleSearcher:
         )
 
     def save_response(self):
-        output_filename = self.query.replace(" ", "_") + ".html"
-        if not self.output_root.exists():
-            self.output_root.mkdir(parents=True, exist_ok=True)
-        output_path = self.output_root / output_filename
-        logger.note(f"Saving to: [{output_path}]")
-        with open(output_path, "wb") as wf:
+        self.output_path = self.filepath_converter.convert(self.query)
+        if not self.output_path.exists():
+            self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        logger.note(f"Saving to: [{self.output_path}]")
+        with open(self.output_path, "wb") as wf:
             wf.write(self.request_response.content)
 
     def search(self, query):

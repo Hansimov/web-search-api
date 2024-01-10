@@ -34,8 +34,9 @@ WINDOWS_INVALID_FILE_PATH_NAMES = [
 
 
 class FilepathConverter:
-    def __init__(self):
+    def __init__(self, parent: str = None):
         self.output_root = Path(__file__).parents[1] / "files"
+        self.parent = parent
 
     def preprocess(self, input_string):
         return input_string
@@ -63,6 +64,7 @@ class FilepathConverter:
         filename = self.validate(filename)
         filename = self.append_extension(filename)
 
+        parent = parent or self.parent
         if parent:
             filepath = self.output_root / parent / filename
         else:
@@ -75,8 +77,8 @@ class FilepathConverter:
 
 
 class UrlToFilepathConverter(FilepathConverter):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent: str = None):
+        super().__init__(parent)
         self.output_root = self.output_root / "urls"
 
     def preprocess(self, url):
@@ -85,8 +87,8 @@ class UrlToFilepathConverter(FilepathConverter):
 
 
 class QueryToFilepathConverter(FilepathConverter):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent: str = None):
+        super().__init__(parent)
         self.output_root = self.output_root / "queries"
 
 
@@ -100,5 +102,5 @@ if __name__ == "__main__":
         "https://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename"
     )
 
-    url_converter = UrlToFilepathConverter()
-    print(url_converter.convert(url, parent=query))
+    url_converter = UrlToFilepathConverter(parent=query)
+    print(url_converter.convert(url))

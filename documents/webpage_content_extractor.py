@@ -95,7 +95,7 @@ class WebpageContentExtractor:
 
         self.main_content = markdownify(html_str, strip="a")
         self.main_content = re.sub(r"\n{3,}", "\n\n", self.main_content)
-        logger.line(self.main_content)
+        # logger.line(self.main_content)
         # pprint(self.main_content)
         token_count = self.count_tokens(self.main_content)
         logger.note(f"Token Count: {token_count}")

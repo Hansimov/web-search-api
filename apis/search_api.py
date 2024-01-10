@@ -12,6 +12,7 @@ from utils.logger import logger
 from networks.google_searcher import GoogleSearcher
 from networks.html_fetcher import HTMLFetcher
 from documents.query_results_extractor import QueryResultsExtractor
+from documents.webpage_content_extractor import WebpageContentExtractor
 from utils.logger import logger
 
 
@@ -42,12 +43,18 @@ class SearchAPIApp:
             default=["web"],
             description="(list[str]) Types of search results: `web`, `image`, `videos`, `news`",
         )
+        extract_content: bool = Field(
+            default=False,
+            description="(bool) Enable extracting main text contents from webpage, will add `text` filed in each `query_result` dict",
+        )
 
     def queries_to_search_results(self, item: QueriesToSearchResultsPostItem):
         google_searcher = GoogleSearcher()
         query_results_extractor = QueryResultsExtractor()
         queries_search_results = []
         for query in item.queries:
+            if not query.strip():
+                continue
             query_html_path = google_searcher.search(
                 query=query, result_num=item.result_num, safe=item.safe
             )
@@ -55,11 +62,18 @@ class SearchAPIApp:
             queries_search_results.append(query_search_results)
         logger.note(queries_search_results)
 
-        # html_fetcher = HTMLFetcher()
-        # for query_search_result in queries_search_results:
-        #     for query_result in query_search_result["query_results"]:
-        #         html_path = html_fetcher.fetch(query_result["url"])
-        #         query_result["html_path"] = str(html_path)
+        if item.extract_content:
+            html_fetcher = HTMLFetcher()
+            webpage_content_extractor = WebpageContentExtractor()
+            for query_idx, query_search_result in enumerate(queries_search_results):
+                for query_result_idx, query_result in enumerate(
+                    query_search_result["query_results"]
+                ):
+                    html_path = html_fetcher.fetch(query_result["url"])
+                    extracted_content = webpage_content_extractor.extract(html_path)
+                    queries_search_results[query_idx]["query_results"][
+                        query_result_idx
+                    ]["text"] = extracted_content
         return queries_search_results
 
     def setup_routes(self):

@@ -8,7 +8,10 @@ IGNORE_CLASSES = [
     # "menu",
     "offcanvas",
     "navbar",
-    "post_side",
+    # 163.com
+    "post_(top)|(side)|(recommends)|(crumb)|(statement)|(next)|(jubao)",
+    "ntes-.*nav",
+    "nav-bottom",
 ]
 
 IGNORE_HOSTS = [

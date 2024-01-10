@@ -34,7 +34,8 @@ class WebpageContentExtractor:
 
     def remove_elements_from_html(self, html_str):
         soup = BeautifulSoup(html_str, "html.parser")
-        ignore_classes_pattern = f'{"|".join(IGNORE_CLASSES)}'
+        ignore_classes_with_parentheses = [f"({word})" for word in IGNORE_CLASSES]
+        ignore_classes_pattern = f'{"|".join(ignore_classes_with_parentheses)}'
         removed_element_counts = 0
         for element in soup.find_all():
             class_str = ""

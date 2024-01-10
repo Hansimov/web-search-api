@@ -21,24 +21,27 @@ class HTMLFetcher:
         )
 
     def save_response(self):
-        self.save_path = UrlToFilepathConverter().convert(self.url)
-        if not self.save_path.exists():
-            self.save_path.parent.mkdir(parents=True, exist_ok=True)
+        self.output_path = UrlToFilepathConverter().convert(self.url)
+        if not self.output_path.exists():
+            self.output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        logger.success(f"Saving to: [{self.save_path}]")
+        logger.success(f"Saving to: [{self.output_path}]")
 
-        with open(self.save_path, "wb") as wf:
+        with open(self.output_path, "wb") as wf:
             wf.write(self.request_response.content)
 
     def fetch(self, url):
         self.url = url
         self.send_request()
         self.save_response()
+        return self.output_path
 
 
 if __name__ == "__main__":
     url = (
-        "https://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename"
+        # "https://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename"
+        # "https://www.liaoxuefeng.com/wiki/1016959663602400/1017495723838528"
+        "https://docs.python.org/zh-cn/3/tutorial/interpreter.html"
     )
     fetcher = HTMLFetcher()
     fetcher.fetch(url)

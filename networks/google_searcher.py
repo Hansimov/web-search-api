@@ -13,7 +13,7 @@ class GoogleSearcher:
         self.enver.set_envs(proxies=True)
         self.filepath_converter = QueryToFilepathConverter()
 
-    def send_request(self, result_num=10):
+    def send_request(self, result_num=10, safe=False):
         logger.note(f"Searching: [{self.query}]")
         self.request_response = requests.get(
             url=self.url,
@@ -35,10 +35,11 @@ class GoogleSearcher:
         with open(self.output_path, "wb") as wf:
             wf.write(self.request_response.content)
 
-    def search(self, query):
+    def search(self, query, result_num=10, safe=False):
         self.query = query
-        self.send_request()
+        self.send_request(result_num=result_num, safe=safe)
         self.save_response()
+        return self.output_path
 
 
 if __name__ == "__main__":

@@ -10,13 +10,14 @@ IGNORE_CLASSES = [
     "navbar",
     # 163.com
     "post_(top)|(side)|(recommends)|(crumb)|(statement)|(next)|(jubao)",
-    "ntes-.*nav",
-    "nav-bottom",
+    "ntes\-.*nav",
+    "nav\-bottom",
 ]
 
 IGNORE_HOSTS = [
     "weibo.com",
     "hymson.com",
+    "yahoo.com",
 ]
 
 REQUESTS_HEADERS = {

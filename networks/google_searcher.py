@@ -3,6 +3,7 @@ from pathlib import Path
 from utils.enver import enver
 from utils.logger import logger
 from networks.filepath_converter import QueryToFilepathConverter
+from networks.network_configs import REQUESTS_HEADERS
 
 
 class GoogleSearcher:
@@ -16,9 +17,7 @@ class GoogleSearcher:
     def send_request(self, result_num=10, safe=False):
         self.request_response = requests.get(
             url=self.url,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62",
-            },
+            headers=REQUESTS_HEADERS,
             params={
                 "q": self.query,
                 "num": result_num,

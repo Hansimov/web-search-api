@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 from tiktoken import get_encoding as tiktoken_get_encoding
 from utils.logger import logger
 from markdownify import markdownify
+from networks.network_configs import IGNORE_CLASSES
 
 # from trafilatura import extract as extract_text_from_html
 # from inscriptis import get_text as extract_text_from_html
@@ -26,17 +27,7 @@ class WebpageContentExtractor:
 
         ignore_tags = ["script", "style", "button"]
 
-        ignore_classes = [
-            "sidebar",
-            "footer",
-            "related",
-            "comment",
-            "topbar",
-            "menu",
-            "offcanvas",
-            "navbar",
-        ]
-        ignore_classes_pattern = f'{"|".join(ignore_classes)}'
+        ignore_classes_pattern = f'{"|".join(IGNORE_CLASSES)}'
         removed_element_counts = 0
         for element in soup.find_all():
             class_str = ""
@@ -61,10 +52,12 @@ class WebpageContentExtractor:
                 or (re.search(ignore_classes_pattern, class_str, flags=re.IGNORECASE))
                 or (re.search(ignore_classes_pattern, id_str, flags=re.IGNORECASE))
             ):
-                # try:
-                #     logger.note(f"Removing:\n{element}")
-                # except:
-                #     logger.note(f"Removing unknown element")
+                try:
+                    logger.note(f"Removing:\n{element}")
+                    logger.warn(class_str)
+                except:
+                    # logger.note(f"Removing unknown element")
+                    pass
                 element.decompose()
                 removed_element_counts += 1
 
@@ -76,9 +69,14 @@ class WebpageContentExtractor:
         return html_str
 
     def extract(self, html_path):
-        logger.note(f"Extracing content from:{html_path}")
-        with open(html_path, "r", encoding="utf-8") as f:
-            html_str = f.read()
+        logger.note(f"Extracting content from: {html_path}")
+
+        if not Path(html_path).exists():
+            logger.warn(f"File not found: {html_path}")
+            return ""
+
+        with open(html_path, "r", encoding="utf-8") as rf:
+            html_str = rf.read()
 
         html_str = self.filter_html_str(html_str)
 
@@ -108,8 +106,9 @@ if __name__ == "__main__":
         / "files"
         / "urls"
         # / "stackoverflow.com_questions_295135_turn-a-string-into-a-valid-filename.html"
-        / "www.liaoxuefeng.com_wiki_1016959663602400_1017495723838528.html"
+        # / "www.liaoxuefeng.com_wiki_1016959663602400_1017495723838528.html"
         # / "docs.python.org_zh-cn_3_tutorial_interpreter.html"
+        / "zh.wikipedia.org_zh-hans_%E7%94%B0%E4%B8%AD%E6%9F%A0%E6%AA%AC.html"
     )
     extractor = WebpageContentExtractor()
     main_content = extractor.extract(html_path)

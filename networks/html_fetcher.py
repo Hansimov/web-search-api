@@ -4,8 +4,7 @@ from pathlib import Path
 from utils.enver import enver
 from utils.logger import logger
 from networks.filepath_converter import UrlToFilepathConverter
-
-IGNORE_HOSTS = ["weibo.com"]
+from networks.network_configs import IGNORE_HOSTS, REQUESTS_HEADERS
 
 
 class HTMLFetcher:
@@ -24,9 +23,7 @@ class HTMLFetcher:
     def send_request(self):
         self.request_response = requests.get(
             url=self.url,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62",
-            },
+            headers=REQUESTS_HEADERS,
             proxies=self.enver.requests_proxies,
         )
 

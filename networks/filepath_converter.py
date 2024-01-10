@@ -1,7 +1,7 @@
 import platform
 import re
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 
 # What characters are forbidden in Windows and Linux directory names?
@@ -42,6 +42,8 @@ class FilepathConverter:
         return input_string
 
     def validate(self, input_string):
+        if not input_string:
+            return input_string
         filename = input_string
         for char in INVALID_FILE_PATH_CHARS:
             filename = filename.replace(char, "_")
@@ -65,6 +67,7 @@ class FilepathConverter:
         filename = self.append_extension(filename)
 
         parent = parent or self.parent
+        parent = self.validate(parent)
         if parent:
             filepath = self.output_root / parent / filename
         else:
@@ -82,7 +85,7 @@ class UrlToFilepathConverter(FilepathConverter):
         self.output_root = self.output_root / "urls"
 
     def preprocess(self, url):
-        filename = url.split("//")[1]
+        filename = unquote(url.split("//")[1])
         return filename
 
 

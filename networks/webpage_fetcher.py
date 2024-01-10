@@ -7,7 +7,7 @@ from networks.filepath_converter import UrlToFilepathConverter
 from networks.network_configs import IGNORE_HOSTS, REQUESTS_HEADERS
 
 
-class HTMLFetcher:
+class WebpageFetcher:
     def __init__(self):
         self.enver = enver
         self.enver.set_envs(proxies=True)
@@ -34,10 +34,12 @@ class HTMLFetcher:
         with open(self.output_path, "wb") as wf:
             wf.write(self.request_response.content)
 
-    def fetch(self, url, overwrite=False):
+    def fetch(self, url, overwrite=False, output_parent=None):
         self.url = url
         logger.note(f"Fetching: [{self.url}]")
-        self.output_path = self.filepath_converter.convert(self.url)
+        self.output_path = self.filepath_converter.convert(
+            self.url, parent=output_parent
+        )
 
         if self.is_ignored_host(self.url):
             logger.warn(f"Ignore host: [{self.host}]")
@@ -57,5 +59,5 @@ if __name__ == "__main__":
         # "https://www.liaoxuefeng.com/wiki/1016959663602400/1017495723838528"
         "https://docs.python.org/zh-cn/3/tutorial/interpreter.html"
     )
-    fetcher = HTMLFetcher()
+    fetcher = WebpageFetcher()
     fetcher.fetch(url)

@@ -10,7 +10,7 @@ from typing import Union
 from sse_starlette.sse import EventSourceResponse, ServerSentEvent
 from utils.logger import logger
 from networks.google_searcher import GoogleSearcher
-from networks.html_fetcher import HTMLFetcher
+from networks.webpage_fetcher import WebpageFetcher
 from documents.query_results_extractor import QueryResultsExtractor
 from documents.webpage_content_extractor import WebpageContentExtractor
 from utils.logger import logger
@@ -74,14 +74,16 @@ class SearchAPIApp:
         logger.note(queries_search_results)
 
         if item.extract_content:
-            html_fetcher = HTMLFetcher()
+            webpage_fetcher = WebpageFetcher()
             webpage_content_extractor = WebpageContentExtractor()
             for query_idx, query_search_result in enumerate(queries_search_results):
                 for query_result_idx, query_result in enumerate(
                     query_search_result["query_results"]
                 ):
-                    webpage_html_path = html_fetcher.fetch(
-                        query_result["url"], overwrite=item.overwrite_webpage_html
+                    webpage_html_path = webpage_fetcher.fetch(
+                        query_result["url"],
+                        overwrite=item.overwrite_webpage_html,
+                        output_parent=query_search_result["query"],
                     )
                     extracted_content = webpage_content_extractor.extract(
                         webpage_html_path

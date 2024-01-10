@@ -1,16 +1,12 @@
 import re
 from pathlib import Path
 from pprint import pprint
-from bs4 import BeautifulSoup, Comment, NavigableString, Tag
+from bs4 import BeautifulSoup
 from tiktoken import get_encoding as tiktoken_get_encoding
 from utils.logger import logger
 from markdownify import markdownify
-from networks.network_configs import IGNORE_CLASSES
-
-# from trafilatura import extract as extract_text_from_html
-# from inscriptis import get_text as extract_text_from_html
-# from html_text import extract_text as extract_text_from_html
-# from readabilipy import simple_json_from_html_string as extract_text_from_html
+from networks.network_configs import IGNORE_TAGS, IGNORE_CLASSES
+from termcolor import colored
 
 
 class WebpageContentExtractor:
@@ -22,11 +18,22 @@ class WebpageContentExtractor:
         token_count = len(tokens)
         return token_count
 
-    def filter_html_str(self, html_str):
+    def html_to_markdown(self, html_str, ignore_links=True):
+        if ignore_links:
+            markdown_str = markdownify(html_str, strip="a")
+        else:
+            markdown_str = markdownify(html_str)
+        markdown_str = re.sub(r"\n{3,}", "\n\n", markdown_str)
+
+        self.markdown_token_count = self.count_tokens(markdown_str)
+        logger.mesg(f'- Tokens: {colored(self.markdown_token_count,"light_green")}')
+
+        self.markdown_str = markdown_str
+
+        return self.markdown_str
+
+    def remove_elements_from_html(self, html_str):
         soup = BeautifulSoup(html_str, "html.parser")
-
-        ignore_tags = ["script", "style", "button"]
-
         ignore_classes_pattern = f'{"|".join(IGNORE_CLASSES)}'
         removed_element_counts = 0
         for element in soup.find_all():
@@ -48,25 +55,22 @@ class WebpageContentExtractor:
 
             if (
                 (not element.text.strip())
-                or (element.name in ignore_tags)
+                or (element.name in IGNORE_TAGS)
                 or (re.search(ignore_classes_pattern, class_str, flags=re.IGNORECASE))
                 or (re.search(ignore_classes_pattern, id_str, flags=re.IGNORECASE))
             ):
-                try:
-                    logger.note(f"Removing:\n{element}")
-                    logger.warn(class_str)
-                except:
-                    # logger.note(f"Removing unknown element")
-                    pass
                 element.decompose()
                 removed_element_counts += 1
 
-        logger.note(
-            f"Elements Removed/Remained:  {removed_element_counts}/{len(soup.find_all())}"
+        logger.mesg(
+            f"- Elements: "
+            f'{colored(len(soup.find_all()),"light_green")} / {colored(removed_element_counts,"light_red")}'
         )
 
         html_str = str(soup)
-        return html_str
+        self.html_str = html_str
+
+        return self.html_str
 
     def extract(self, html_path):
         logger.note(f"Extracting content from: {html_path}")
@@ -78,26 +82,9 @@ class WebpageContentExtractor:
         with open(html_path, "r", encoding="utf-8") as rf:
             html_str = rf.read()
 
-        html_str = self.filter_html_str(html_str)
-
-        # self.main_content = extract_text_from_html(html_str)
-
-        # # when using `readabilipy`
-        # self.main_content = extract_text_from_html(html_str)["plain_content"]
-        # self.main_content = "\n".join(
-        #     item["text"] for item in extract_text_from_html(html_str)["plain_text"]
-        # )
-        # self.main_content = markdownify(extract_text_from_html(html_str)["content"])
-
-        # self.main_content = markdownify(extract_text_from_html(html_str))
-
-        self.main_content = markdownify(html_str, strip="a")
-        self.main_content = re.sub(r"\n{3,}", "\n\n", self.main_content)
-        # logger.line(self.main_content)
-        # pprint(self.main_content)
-        token_count = self.count_tokens(self.main_content)
-        logger.note(f"Token Count: {token_count}")
-        return self.main_content
+        html_str = self.remove_elements_from_html(html_str)
+        markdown_str = self.html_to_markdown(html_str)
+        return markdown_str
 
 
 if __name__ == "__main__":

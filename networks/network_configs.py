@@ -1,3 +1,4 @@
+IGNORE_TAGS = ["script", "style", "button"]
 IGNORE_CLASSES = [
     "sidebar",
     "footer",

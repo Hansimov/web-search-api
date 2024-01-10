@@ -14,7 +14,6 @@ class GoogleSearcher:
         self.filepath_converter = QueryToFilepathConverter()
 
     def send_request(self, result_num=10, safe=False):
-        logger.note(f"Searching: [{self.query}]")
         self.request_response = requests.get(
             url=self.url,
             headers={
@@ -28,17 +27,21 @@ class GoogleSearcher:
         )
 
     def save_response(self):
-        self.output_path = self.filepath_converter.convert(self.query)
         if not self.output_path.exists():
             self.output_path.parent.mkdir(parents=True, exist_ok=True)
         logger.note(f"Saving to: [{self.output_path}]")
         with open(self.output_path, "wb") as wf:
             wf.write(self.request_response.content)
 
-    def search(self, query, result_num=10, safe=False):
+    def search(self, query, result_num=10, safe=False, overwrite=False):
         self.query = query
-        self.send_request(result_num=result_num, safe=safe)
-        self.save_response()
+        self.output_path = self.filepath_converter.convert(self.query)
+        logger.note(f"Searching: [{self.query}]")
+        if self.output_path.exists() and not overwrite:
+            logger.success(f"HTML existed: {self.output_path}")
+        else:
+            self.send_request(result_num=result_num, safe=safe)
+            self.save_response()
         return self.output_path
 
 

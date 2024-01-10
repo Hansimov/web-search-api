@@ -1,17 +1,27 @@
 import requests
+import tldextract
 from pathlib import Path
 from utils.enver import enver
 from utils.logger import logger
 from networks.filepath_converter import UrlToFilepathConverter
+
+IGNORE_HOSTS = ["weibo.com"]
 
 
 class HTMLFetcher:
     def __init__(self):
         self.enver = enver
         self.enver.set_envs(proxies=True)
+        self.filepath_converter = UrlToFilepathConverter()
+
+    def is_ignored_host(self, url):
+        self.host = tldextract.extract(url).registered_domain
+        if self.host in IGNORE_HOSTS:
+            return True
+        else:
+            return False
 
     def send_request(self):
-        logger.note(f"Fetching: [{self.url}]")
         self.request_response = requests.get(
             url=self.url,
             headers={
@@ -21,19 +31,26 @@ class HTMLFetcher:
         )
 
     def save_response(self):
-        self.output_path = UrlToFilepathConverter().convert(self.url)
         if not self.output_path.exists():
             self.output_path.parent.mkdir(parents=True, exist_ok=True)
-
         logger.success(f"Saving to: [{self.output_path}]")
-
         with open(self.output_path, "wb") as wf:
             wf.write(self.request_response.content)
 
-    def fetch(self, url):
+    def fetch(self, url, overwrite=False):
         self.url = url
-        self.send_request()
-        self.save_response()
+        logger.note(f"Fetching: [{self.url}]")
+        self.output_path = self.filepath_converter.convert(self.url)
+
+        if self.is_ignored_host(self.url):
+            logger.warn(f"Ignore host: [{self.host}]")
+            return self.output_path
+
+        if self.output_path.exists() and not overwrite:
+            logger.success(f"HTML existed: [{self.output_path}]")
+        else:
+            self.send_request()
+            self.save_response()
         return self.output_path
 
 

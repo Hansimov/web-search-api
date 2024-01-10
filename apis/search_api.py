@@ -47,6 +47,14 @@ class SearchAPIApp:
             default=False,
             description="(bool) Enable extracting main text contents from webpage, will add `text` filed in each `query_result` dict",
         )
+        overwrite_query_html: bool = Field(
+            default=False,
+            description="(bool) Overwrite HTML file of query results",
+        )
+        overwrite_webpage_html: bool = Field(
+            default=False,
+            description="(bool) Overwrite HTML files of webpages from query results",
+        )
 
     def queries_to_search_results(self, item: QueriesToSearchResultsPostItem):
         google_searcher = GoogleSearcher()
@@ -56,7 +64,10 @@ class SearchAPIApp:
             if not query.strip():
                 continue
             query_html_path = google_searcher.search(
-                query=query, result_num=item.result_num, safe=item.safe
+                query=query,
+                result_num=item.result_num,
+                safe=item.safe,
+                overwrite=item.overwrite_query_html,
             )
             query_search_results = query_results_extractor.extract(query_html_path)
             queries_search_results.append(query_search_results)
@@ -69,8 +80,12 @@ class SearchAPIApp:
                 for query_result_idx, query_result in enumerate(
                     query_search_result["query_results"]
                 ):
-                    html_path = html_fetcher.fetch(query_result["url"])
-                    extracted_content = webpage_content_extractor.extract(html_path)
+                    webpage_html_path = html_fetcher.fetch(
+                        query_result["url"], overwrite=item.overwrite_webpage_html
+                    )
+                    extracted_content = webpage_content_extractor.extract(
+                        webpage_html_path
+                    )
                     queries_search_results[query_idx]["query_results"][
                         query_result_idx
                     ]["text"] = extracted_content

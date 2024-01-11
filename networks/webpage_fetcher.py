@@ -58,12 +58,16 @@ class BatchWebpageFetcher:
     def __init__(self):
         self.done_count = 0
         self.total_count = 0
+        self.url_and_output_path_list = []
 
     def fecth_single_webpage(self, url, overwrite=False, output_parent=None):
         webpage_fetcher = WebpageFetcher()
-        webpage_fetcher.fetch(url=url, overwrite=overwrite, output_parent=output_parent)
+        output_path = webpage_fetcher.fetch(
+            url=url, overwrite=overwrite, output_parent=output_parent
+        )
+        self.url_and_output_path_list.append({"url": url, "output_path": output_path})
         self.done_count += 1
-        logger.success(f"> {self.done_count}/{self.total_count}: {url}")
+        logger.success(f"> [{self.done_count}/{self.total_count}] Fetched: {url}")
 
     def fetch(self, urls, overwrite=False, output_parent=None):
         self.urls = urls
@@ -81,6 +85,7 @@ class BatchWebpageFetcher:
 
             for idx, future in enumerate(concurrent.futures.as_completed(futures)):
                 result = future.result()
+        return self.url_and_output_path_list
 
 
 if __name__ == "__main__":

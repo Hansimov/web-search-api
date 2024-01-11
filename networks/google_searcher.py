@@ -26,22 +26,22 @@ class GoogleSearcher:
         )
 
     def save_response(self):
-        if not self.output_path.exists():
-            self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        logger.note(f"Saving to: [{self.output_path}]")
-        with open(self.output_path, "wb") as wf:
+        if not self.html_path.exists():
+            self.html_path.parent.mkdir(parents=True, exist_ok=True)
+        logger.note(f"Saving to: [{self.html_path}]")
+        with open(self.html_path, "wb") as wf:
             wf.write(self.request_response.content)
 
     def search(self, query, result_num=10, safe=False, overwrite=False):
         self.query = query
-        self.output_path = self.filepath_converter.convert(self.query)
+        self.html_path = self.filepath_converter.convert(self.query)
         logger.note(f"Searching: [{self.query}]")
-        if self.output_path.exists() and not overwrite:
-            logger.success(f"HTML existed: {self.output_path}")
+        if self.html_path.exists() and not overwrite:
+            logger.success(f"HTML existed: {self.html_path}")
         else:
             self.send_request(result_num=result_num, safe=safe)
             self.save_response()
-        return self.output_path
+        return self.html_path
 
 
 if __name__ == "__main__":

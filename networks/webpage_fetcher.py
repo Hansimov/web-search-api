@@ -34,47 +34,45 @@ class WebpageFetcher:
             self.request_response = None
 
     def save_response(self):
-        if not self.output_path.exists():
-            self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        logger.success(f"Saving to: [{self.output_path}]")
+        if not self.html_path.exists():
+            self.html_path.parent.mkdir(parents=True, exist_ok=True)
+        logger.success(f"Saving to: [{self.html_path}]")
 
         if self.request_response is None:
             return
         else:
-            with open(self.output_path, "wb") as wf:
+            with open(self.html_path, "wb") as wf:
                 wf.write(self.request_response.content)
 
     def fetch(self, url, overwrite=False, output_parent=None):
         self.url = url
         logger.note(f"Fetching: [{self.url}]")
-        self.output_path = self.filepath_converter.convert(
-            self.url, parent=output_parent
-        )
+        self.html_path = self.filepath_converter.convert(self.url, parent=output_parent)
 
         if self.is_ignored_host(self.url):
             logger.warn(f"Ignore host: [{self.host}]")
-            return self.output_path
+            return self.html_path
 
-        if self.output_path.exists() and not overwrite:
-            logger.success(f"HTML existed: [{self.output_path}]")
+        if self.html_path.exists() and not overwrite:
+            logger.success(f"HTML existed: [{self.html_path}]")
         else:
             self.send_request()
             self.save_response()
-        return self.output_path
+        return self.html_path
 
 
 class BatchWebpageFetcher:
     def __init__(self):
         self.done_count = 0
         self.total_count = 0
-        self.url_and_output_path_list = []
+        self.url_and_html_path_list = []
 
     def fecth_single_webpage(self, url, overwrite=False, output_parent=None):
         webpage_fetcher = WebpageFetcher()
-        output_path = webpage_fetcher.fetch(
+        html_path = webpage_fetcher.fetch(
             url=url, overwrite=overwrite, output_parent=output_parent
         )
-        self.url_and_output_path_list.append({"url": url, "output_path": output_path})
+        self.url_and_html_path_list.append({"url": url, "html_path": html_path})
         self.done_count += 1
         logger.success(f"> [{self.done_count}/{self.total_count}] Fetched: {url}")
 
@@ -94,7 +92,7 @@ class BatchWebpageFetcher:
 
             for idx, future in enumerate(concurrent.futures.as_completed(futures)):
                 result = future.result()
-        return self.url_and_output_path_list
+        return self.url_and_html_path_list
 
 
 if __name__ == "__main__":

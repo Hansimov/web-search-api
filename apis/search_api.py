@@ -94,7 +94,7 @@ class SearchAPIApp:
                 output_parent=query_search_results["query"],
             )
             html_paths = [
-                url_and_html_path["output_path"]
+                str(url_and_html_path["html_path"])
                 for url_and_html_path in url_and_html_path_list
             ]
 
@@ -109,7 +109,7 @@ class SearchAPIApp:
 
             for item in url_and_html_path_list:
                 url = item["url"]
-                html_path = item["output_path"]
+                html_path = str(item["html_path"])
                 extracted_content = html_path_and_extracted_content_list[
                     html_paths.index(html_path)
                 ]["extracted_content"]

@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from pathlib import Path
+from utils.logger import logger
 
 
 class QueryResultsExtractor:
@@ -24,7 +25,9 @@ class QueryResultsExtractor:
             if abstract_element is None:
                 abstract_element = result.find("div", class_="ITZIwc")
             abstract = abstract_element.text.strip()
-            print(f"{title}\n" f"  - {site}\n" f"  - {url}\n" f"  - {abstract}\n" f"\n")
+            logger.mesg(
+                f"{title}\n" f"  - {site}\n" f"  - {url}\n" f"  - {abstract}\n" f"\n"
+            )
             self.query_results.append(
                 {
                     "title": title,
@@ -35,7 +38,7 @@ class QueryResultsExtractor:
                     "type": "web",
                 }
             )
-        print(len(query_result_elements))
+        logger.success(f"- {len(query_result_elements)} query results")
 
     def extract_related_questions(self):
         related_question_elements = self.soup.find_all(
@@ -45,7 +48,7 @@ class QueryResultsExtractor:
             question = question_element.find("span").text.strip()
             print(question)
             self.related_questions.append(question)
-        print(len(related_question_elements))
+        logger.success(f"- {len(self.related_questions)} related questions")
 
     def extract(self, html_path):
         self.load_html(html_path)

@@ -81,8 +81,17 @@ class WebpageContentExtractor:
             logger.warn(f"File not found: {html_path}")
             return ""
 
-        with open(html_path, "r", encoding="utf-8") as rf:
-            html_str = rf.read()
+        encodings = ["utf-8", "latin-1"]
+        for encoding in encodings:
+            try:
+                with open(html_path, "r", encoding=encoding, errors="ignore") as rf:
+                    html_str = rf.read()
+                break
+            except UnicodeDecodeError:
+                pass
+        else:
+            logger.warn(f"No matching encodings: {html_path}")
+            return ""
 
         html_str = self.remove_elements_from_html(html_str)
         markdown_str = self.html_to_markdown(html_str)

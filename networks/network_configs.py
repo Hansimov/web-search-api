@@ -1,17 +1,22 @@
 IGNORE_TAGS = ["script", "style", "button"]
 IGNORE_CLASSES = [
+    # common
     "sidebar",
     "footer",
     "related",
     "comment",
     "topbar",
-    # "menu",
     "offcanvas",
     "navbar",
     # 163.com
     "post_(top)|(side)|(recommends)|(crumb)|(statement)|(next)|(jubao)",
     "ntes\-.*nav",
     "nav\-bottom",
+    # wikipedia.org
+    "language\-list",
+    "vector\-(header)|(column)|(sticky\-pinned)|(dropdown\-content)",
+    "navbox",
+    "catlinks",
 ]
 
 IGNORE_HOSTS = [

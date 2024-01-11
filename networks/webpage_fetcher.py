@@ -22,18 +22,27 @@ class WebpageFetcher:
             return False
 
     def send_request(self):
-        self.request_response = requests.get(
-            url=self.url,
-            headers=REQUESTS_HEADERS,
-            proxies=self.enver.requests_proxies,
-        )
+        try:
+            self.request_response = requests.get(
+                url=self.url,
+                headers=REQUESTS_HEADERS,
+                proxies=self.enver.requests_proxies,
+                timeout=15,
+            )
+        except:
+            logger.warn(f"Failed to fetch: [{self.url}]")
+            self.request_response = None
 
     def save_response(self):
         if not self.output_path.exists():
             self.output_path.parent.mkdir(parents=True, exist_ok=True)
         logger.success(f"Saving to: [{self.output_path}]")
-        with open(self.output_path, "wb") as wf:
-            wf.write(self.request_response.content)
+
+        if self.request_response is None:
+            return
+        else:
+            with open(self.output_path, "wb") as wf:
+                wf.write(self.request_response.content)
 
     def fetch(self, url, overwrite=False, output_parent=None):
         self.url = url

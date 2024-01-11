@@ -58,9 +58,9 @@ class SearchAPIApp:
 
     def queries_to_search_results(self, item: QueriesToSearchResultsPostItem):
         google_searcher = GoogleSearcher()
-        query_results_extractor = QueryResultsExtractor()
         queries_search_results = []
         for query in item.queries:
+            query_results_extractor = QueryResultsExtractor()
             if not query.strip():
                 continue
             query_html_path = google_searcher.search(

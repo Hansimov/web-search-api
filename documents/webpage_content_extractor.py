@@ -1,3 +1,4 @@
+import concurrent.futures
 import re
 from pathlib import Path
 from pprint import pprint
@@ -88,15 +89,48 @@ class WebpageContentExtractor:
         return markdown_str
 
 
+class BatchWebpageContentExtractor:
+    def __init__(self) -> None:
+        self.html_path_and_extracted_content_list = []
+        self.done_count = 0
+
+    def extract_single_html(self, html_path):
+        webpage_content_extractor = WebpageContentExtractor()
+        extracted_content = webpage_content_extractor.extract(html_path)
+        self.html_path_and_extracted_content_list.append(
+            {"html_path": html_path, "extracted_content": extracted_content}
+        )
+        self.done_count += 1
+        logger.success(
+            f"> [{self.done_count}/{self.total_count}] Extracted: {html_path}"
+        )
+
+    def extract(self, html_paths):
+        self.html_path = html_paths
+        self.total_count = len(self.html_path)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(self.extract_single_html, html_path)
+                for html_path in self.html_path
+            ]
+            for idx, future in enumerate(concurrent.futures.as_completed(futures)):
+                result = future.result()
+
+        return self.html_path_and_extracted_content_list
+
+
 if __name__ == "__main__":
-    html_path = (
-        Path(__file__).parents[1]
-        / "files"
-        / "urls"
-        # / "stackoverflow.com_questions_295135_turn-a-string-into-a-valid-filename.html"
-        # / "www.liaoxuefeng.com_wiki_1016959663602400_1017495723838528.html"
-        # / "docs.python.org_zh-cn_3_tutorial_interpreter.html"
-        / "zh.wikipedia.org_zh-hans_%E7%94%B0%E4%B8%AD%E6%9F%A0%E6%AA%AC.html"
+    html_root = Path(__file__).parents[1] / "files" / "urls" / "python tutorials"
+    html_paths = [
+        html_root / html_filename
+        for html_filename in [
+            "docs.python.org_zh-cn_3_tutorial_interpreter.html",
+            "stackoverflow.com_questions_295135_turn-a-string-into-a-valid-filename.html",
+            "www.liaoxuefeng.com_wiki_1016959663602400_1017495723838528.html",
+        ]
+    ]
+    batch_webpage_content_extractor = BatchWebpageContentExtractor()
+    html_path_and_extracted_content_list = batch_webpage_content_extractor.extract(
+        html_paths
     )
-    extractor = WebpageContentExtractor()
-    main_content = extractor.extract(html_path)
+    # pprint(html_path_and_extracted_content_list)

@@ -21,10 +21,18 @@ class QueryResultsExtractor:
             url = result.find("a")["href"]
             title = result.find("h3").text.strip()
 
-            abstract_element = result.find("div", {"data-sncf": "1"})
-            if abstract_element is None:
-                abstract_element = result.find("div", class_="ITZIwc")
-            abstract = abstract_element.text.strip()
+            abstract_element_conditions = [
+                {"data-sncf": "1"},
+                {"class_": "ITZIwc"},
+            ]
+            for condition in abstract_element_conditions:
+                abstract_element = result.find("div", condition)
+                if abstract_element is not None:
+                    abstract = abstract_element.text.strip()
+                    break
+            else:
+                abstract = ""
+
             logger.mesg(
                 f"{title}\n" f"  - {site}\n" f"  - {url}\n" f"  - {abstract}\n" f"\n"
             )

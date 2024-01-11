@@ -93,33 +93,35 @@ class SearchAPIApp:
                 overwrite=overwrite_webpage_html,
                 output_parent=query_search_results["query"],
             )
+
+            # Extract webpage contents from htmls
             html_paths = [
                 str(url_and_html_path["html_path"])
                 for url_and_html_path in url_and_html_path_list
             ]
-
-            # Extract webpage contents from htmls
             batch_webpage_content_extractor = BatchWebpageContentExtractor()
             html_path_and_extracted_content_list = (
                 batch_webpage_content_extractor.extract(html_paths)
             )
 
+            # Build the map of url to extracted_content
+            html_path_to_url_dict = {
+                str(url_and_html_path["html_path"]): url_and_html_path["url"]
+                for url_and_html_path in url_and_html_path_list
+            }
+            url_to_extracted_content_dict = {
+                html_path_to_url_dict[
+                    html_path_and_extracted_content["html_path"]
+                ]: html_path_and_extracted_content["extracted_content"]
+                for html_path_and_extracted_content in html_path_and_extracted_content_list
+            }
+
             # Write extracted contents (as 'text' field) to query_search_results
-            url_and_extracted_content_dict = {}
-
-            for item in url_and_html_path_list:
-                url = item["url"]
-                html_path = str(item["html_path"])
-                extracted_content = html_path_and_extracted_content_list[
-                    html_paths.index(html_path)
-                ]["extracted_content"]
-                url_and_extracted_content_dict[url] = extracted_content
-
             for query_result_idx, query_result in enumerate(
                 query_search_results["query_results"]
             ):
                 url = query_result["url"]
-                extracted_content = url_and_extracted_content_dict[url]
+                extracted_content = url_to_extracted_content_dict[url]
                 queries_search_results[query_idx]["query_results"][query_result_idx][
                     "text"
                 ] = extracted_content
